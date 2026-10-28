@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GuardRail AI - Privacy Control Center</title>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0; padding: 0; min-height: 100vh;
+        }
+        nav {
+            background-color: #020617;
+            border-bottom: 1px solid #1e293b;
+            padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { font-size: 1.25rem; font-weight: bold; color: #2dd4bf; letter-spacing: 0.05em; }
+        .badge { padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; background-color: #10b981; color: #fff; }
+        main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .card { background-color: #020617; border: 1px solid #1e293b; border-radius: 12px; padding: 1.5rem; }
+        .card-accent { border-left: 4px solid #14b8a6; }
+        .card-label { font-size: 0.875rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin: 0; }
+        .card-value { font-size: 2.5rem; font-weight: 800; margin: 0.5rem 0 0 0; }
+        .teal-text { color: #2dd4bf; }
+        .chart-container { background-color: #020617; border: 1px solid #1e293b; border-radius: 12px; padding: 1.5rem; }
+        .chart-title { font-size: 1.125rem; font-weight: 700; color: #cbd5e1; margin: 0 0 1rem 0; }
+        .bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 200px; border-bottom: 2px solid #334155; padding-bottom: 5px; }
+        .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+        .bar { width: 100%; background-color: #14b8a6; border-radius: 4px 4px 0 0; min-height: 4px; }
+        .bar-label { font-size: 0.65rem; color: #64748b; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">🛡️ GUARDRAIL AI</div>
+        <div id="connection-badge" class="badge">GATEWAY ONLINE</div>
+    </nav>
+    <main>
+        <div class="grid">
+            <div class="card">
+                <p class="card-label">Total Scanned Requests</p>
+                <h2 id="metric-requests" class="card-value">0</h2>
+            </div>
+            <div class="card card-accent">
+                <p class="card-label">Privacy Leaks Blocked</p>
+                <h2 id="metric-leaks" class="card-value teal-text">0</h2>
+            </div>
+        </div>
+        <div class="chart-container">
+            <h3 class="chart-title">Live Traffic Intercept History</h3>
+            <div id="chart-view" class="bar-chart"></div>
+        </div>
+    </main>
+    <script>
+        async function fetchMetrics() {
+            try {
+                const response = await fetch("/api/metrics");
+                const data = await response.json();
+                document.getElementById('metric-requests').innerText = data.total_requests;
+                document.getElementById('metric-leaks').innerText = data.total_leaks_blocked;
+                
+                const chartView = document.getElementById('chart-view');
+                chartView.innerHTML = '';
+                
+                if (!data.history || data.history.length === 0) {
+                    chartView.innerHTML = '<div style="color:#475569; width:100%; text-align:center; padding-top:80px;">No historical intercepts logged yet.</div>';
+                    return;
+                }
+                
+                const maxLeaks = Math.max(...data.history.map(item => item.leaks || 0), 1);
+                data.history.forEach((item, index) => {
+                    const leaksCount = item.leaks || 0;
+                    const heightPercentage = (leaksCount / maxLeaks) * 80;
+                    const barGroup = document.createElement('div');
+                    barGroup.className = 'bar-group';
+                    barGroup.innerHTML = `
+                        <div style="font-size: 0.75rem; margin-bottom: 2px; color: #2dd4bf;">${leaksCount}</div>
+                        <div class="bar" style="height: ${heightPercentage || 5}%;"></div>
+                        <div class="bar-label">Req #${index + 1}</div>
+                    `;
+                    chartView.appendChild(barGroup);
+                });
+            } catch (err) {
+                console.error("Data tracking error:", err);
+            }
+        }
+        fetchMetrics();
+        setInterval(fetchMetrics, 3000);
+    </script>
+</body>
+</html>
