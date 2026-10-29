@@ -6,8 +6,6 @@ How it works:
 1. Intercepts outgoing LLM prompt payloads locally.
 2. Extracts and redacts PII using local Named-Entity Recognition (NER).
 3. Vaults sensitive data structures dynamically, replacing them with tracking tokens.
-4. Restores returning cloud AI responses seamlessly on the return network path.
-
-Check out the architecture and full analytics dashboard in the video below! 
+4. Restores returning cloud AI responses seamlessly on the return network path. 
 
 #AI #Cybersecurity #SoftwareEngineering #Python #FastAPI #MachineLearning
